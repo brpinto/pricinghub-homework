@@ -1,0 +1,50 @@
+.custom-calendar {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.2);
+}
+
+.custom-date-input {
+    border: none;
+    background-color: transparent;
+    font-size: 1.1em;
+}
+
+.custom-date-input:focus{
+    outline: none;
+}
+
+.react-datepicker__header {
+    background-color: #ffffff;
+    border-radius: 15px 15px;
+    border: none;
+}
+
+.react-datepicker__header:not(.react-datepicker__header--has-time-select) {
+    border-top-right-radius: 15px;
+}
+
+.react-datepicker__day--selected, .react-datepicker__day--in-selecting-range, .react-datepicker__day--in-range {
+    background: #f675a8 !important;
+}
+
+.react-datepicker__day--in-selecting-range:not(.react-datepicker__day--in-range) {
+    background: #f675a880 !important;
+}
+
+#arrow-down-button {
+    width: 10%;
+}
+
+#arrow-down-button:hover {
+    cursor: pointer;
+}
+
+.list-visible {
+    height: 300px;
+}
+
+.list-hidden {
+    height: 0px;
+    // transition: height 1s ease-in;
+}

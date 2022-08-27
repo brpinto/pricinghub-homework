@@ -6,7 +6,11 @@ COPY package.json .
 
 COPY tsconfig.json .
 
+COPY tsconfig.path.json .
+
 RUN yarn install
+
+RUN yarn add sass
 
 COPY . .
 
