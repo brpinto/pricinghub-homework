@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import DatePicker, { registerLocale } from "react-datepicker";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
+import axios from 'axios';
+import moment from "moment";
 
 import fr from "date-fns/locale/fr";
 
@@ -10,39 +12,47 @@ import "./index.scss";
 
 import { ReactComponent as ToggleDownArrow } from "../../assets/svg/arrow-down.svg";
 
+axios.defaults.baseURL = 'http://localhost:4000';
+axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*'
+
+// type FormValues = {
+//     competitorName: boolean;
+// };
+
 const GraphForm = () => {
     const [startDate, setStartDate] = useState<Date>(new Date());
     const [endDate, setEndDate] = useState<Date>(new Date());
     const [competitorsCount, setCompetitorsCount] = useState<number>(0);
     const [showCompetitorsList, setShowCompetitorsList] = useState<boolean>(false);
     const { register, handleSubmit } = useForm();
-    const competitorsArray: string[] = [
-        '1001pneus.fr',
-        'auto.leclerc',
-        'avatacar.com',
-        'bonspneus.fr',
-        'centralepneus.fr',
-        'coteroute.fr',
-        'discount-pneus.com',
-        'euromaster.fr',
-        'feuvert.fr',
-        'firststop.fr',
-        'mister-auto.com',
-        'monauto.carrefour.fr',
-        'norauto.fr',
-        'pneus-online.fr',
-        'profilplus.fr',
-        'tirendo.fr',
-        'toopneus.com',
-        'vulco.com',
-        '123pneus.fr',
-        'cdiscount.com',
-        '1001neumaticos.es',
-        'bandenleader.nl',
-        'centralepneus.be',
-        'neumaticoslider.es',
-        'oponeo.nl',
-        'MY_DEAR_CUSTOMER.com'
+    
+    const competitorsArray = [
+        "1001pneus.fr",
+        "auto.leclerc",
+        "avatacar.com",
+        "bonspneus.fr",
+        "centralepneus.fr",
+        "coteroute.fr",
+        "discount-pneus.com",
+        "euromaster.fr",
+        "feuvert.fr",
+        "firststop.fr",
+        "mister-auto.com",
+        "monauto.carrefour.fr",
+        "norauto.fr",
+        "pneus-online.fr",
+        "profilplus.fr",
+        "tirendo.fr",
+        "toopneus.com",
+        "vulco.com",
+        "123pneus.fr",
+        "cdiscount.com",
+        "1001neumaticos.es",
+        "bandenleader.nl",
+        "centralepneus.be",
+        "neumaticoslider.es",
+        "oponeo.nl",
+        "MY_DEAR_CUSTOMER.co"
     ]
     
     const today = new Date();
@@ -59,12 +69,49 @@ const GraphForm = () => {
         setShowCompetitorsList(!showCompetitorsList);
     }
 
+    const flattenObject = (obj: any) => {
+        var toReturn:any = {};
+    
+        for (var i in obj) {
+            if (!obj.hasOwnProperty(i)) continue;
+    
+            if ((typeof obj[i]) == 'object' && obj[i] !== null) {
+                var flatObject:any = flattenObject(obj[i]);
+                for (var x in flatObject) {
+                    if (!flatObject.hasOwnProperty(x)) continue;
+
+                    toReturn[i + '.' + x] = flatObject[x];
+                }
+            } else {
+                toReturn[i] = obj[i];
+            }
+        }
+        return toReturn;
+    }
+
     const onSubmit = (data: any) => {
-        console.log(JSON.stringify(data));
-    };
+        const flattened = flattenObject(data);
+        const formatedStartDate = moment(startDate).format("DD/MM/YYYY");
+        const formatedEndDate = moment(endDate).format("DD/MM/YYYY");
+        let formData: any = {};
+        (Object.entries(flattened)).map((val:any, key: number) => {
+            if (val[1])
+                formData[val[0]] = val[1];
+        });
+
+        axios.post('/chart', {
+            competitors: formData,
+            date: [formatedStartDate, formatedEndDate]
+        })
+            .then((res) => console.log(res.data))
+            .catch(error => {
+                console.log(error);
+            })
+    }
 
     return (
         <FormContainer>
+            <FormContent>
             <DatePickerContainer>
                 <DatePickerInput>
                     <Label>Début</Label>
@@ -111,27 +158,35 @@ const GraphForm = () => {
                     </ToggleButton>
                 </CompetitorListHeader>
                 <CompetitorsChoiceList className={showCompetitorsList ? "list-visible" : "list-hidden"}>
-                    {competitorsArray.map((value: string, id: number) => {
-                            return (
-                                <label key={id}>
-                                    <input
-                                        {...register(value)}
-                                        name={value}
-                                        type="checkbox"
-                                        value={value}
-                                        onChange={(e) => {
-                                            if (e.target.checked)
-                                                setCompetitorsCount(competitorsCount + 1);
-                                            else
-                                                setCompetitorsCount(competitorsCount - 1);
-                                        }} />{' '}
-                                    {value}
-                                </label>
-                            )
-                        })
-                    }
+                    <form id='competitors-form' onSubmit={handleSubmit(onSubmit)}>
+                        {competitorsArray.map((competitor: string, id: number) => {
+                                return (
+                                    <label key={id}>
+                                        <input
+                                            {...register(competitor)}
+                                            name={competitor}
+                                            type="checkbox"
+                                            // value={competitorName}
+                                            onChange={(e) => {
+                                                if (e.target.checked)
+                                                    setCompetitorsCount(competitorsCount + 1);
+                                                else
+                                                    setCompetitorsCount(competitorsCount - 1);
+                                            }} />
+                                        {competitor}
+                                    </label>
+                                )
+                            })
+                        }
+                        <button id="hidden-submit-button"style={{visibility: "hidden"}} type="submit">submit</button>
+                    </form>
                 </CompetitorsChoiceList>
             </CompetitorListContainer>
+            </FormContent>
+            <FakeSubmit onClick={() => {
+                const buttonToTrigger = document.getElementById("hidden-submit-button");
+                buttonToTrigger?.click();
+            }}>Valider</FakeSubmit>
         </FormContainer>
     )
 }
@@ -139,11 +194,19 @@ const GraphForm = () => {
 const FormContainer = styled.section`
     display: flex;
     flex-direction: column;
+    align-items: center;
     height: auto;
     width: 600px;
     background-color: #ffffff;
     border-radius: 15px;
     box-shadow: 0 0 25px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+`;
+
+const FormContent = styled.div`
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 `;
 
 const DatePickerContainer = styled.section`
@@ -167,7 +230,7 @@ const DatePickerInput = styled.div`
     }
 `;
 
-const CompetitorListContainer = styled.form`
+const CompetitorListContainer = styled.section`
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -198,15 +261,35 @@ const ToggleButton = styled.div`
 `;
 
 const CompetitorsChoiceList = styled.div`
-    overflow: hidden;
+    overflow-y: scroll;
+    scrollbar-color: #757575 transparent;
     transition: height 0.5s;
     width: 100%;
     background-color: transparent;
-    display: flex;
-    flex-direction: column;
+
     margin-top: 2%;
     position: relative;
     left: -4px;
+`;
+
+const FakeSubmit = styled.button`
+    position: absolute;
+    top: 110%;
+    width: 100%;
+    border: none;
+    background-color: #f675a8;
+    color: #ffffff;
+    font-weight: 700;
+    font-family: 'Roboto', 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    font-size: 1.2em;
+    padding: 10px 0;
+    border-radius: 10px;
+
+    &:hover {
+        cursor: pointer;
+    }
 `;
 
 const Label = styled.p`

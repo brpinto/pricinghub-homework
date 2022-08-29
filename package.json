@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "react-dates": "^21.8.0",
-    "sass": "^1.54.5"
-  },
-  "devDependencies": {
-    "@types/react-dates": "^21.8.3"
-  }
-}

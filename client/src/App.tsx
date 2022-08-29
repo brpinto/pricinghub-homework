@@ -10,7 +10,7 @@ function App() {
     <>
       <MainContainer>
         <Heading>
-          Prices Visualization
+          <h1>Prices Visualization</h1>
         </Heading>
         <ContentContainer>
           <GraphForm />
@@ -30,11 +30,11 @@ const MainContainer = styled.main`
   // background-color: tomato;
 `
 
-const Heading = styled.h1`
+const Heading = styled.div`
   margin: 0;
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: .6;
   justify-content: center;
 `
 

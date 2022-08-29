@@ -40,6 +40,11 @@
     cursor: pointer;
 }
 
+#competitors-form {
+    display: flex;
+    flex-direction: column;
+}
+
 .list-visible {
     height: 300px;
 }
