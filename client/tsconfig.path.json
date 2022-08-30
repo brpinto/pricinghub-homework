@@ -5,7 +5,8 @@
         "@src/*": ["./src/*"],
         "@components/*": ["./src/components/*"],
         "@assets/*": ["./src/assets/*"],
-        "@svg/*": ["./src/assets/svg/*"]
+        "@svg/*": ["./src/assets/svg/*"],
+        "@helpers/*": ["./src/helpers/*"]
       }
     }
   }

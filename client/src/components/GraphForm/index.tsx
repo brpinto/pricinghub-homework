@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 import styled from "styled-components";
 import DatePicker, { registerLocale } from "react-datepicker";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import axios from 'axios';
 import moment from "moment";
+import { createDataSet, flattenObject } from "../../helpers/utils";
 
 import fr from "date-fns/locale/fr";
 
@@ -11,19 +13,20 @@ import "react-datepicker/dist/react-datepicker.css";
 import "./index.scss";
 
 import { ReactComponent as ToggleDownArrow } from "../../assets/svg/arrow-down.svg";
+import { updateChartData, updateChartVisibility, updateFormVisibility } from "../../redux/chartReducer";
+import { RootState } from "@src/redux/store";
 
 axios.defaults.baseURL = 'http://localhost:4000';
 axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*'
-
-// type FormValues = {
-//     competitorName: boolean;
-// };
 
 const GraphForm = () => {
     const [startDate, setStartDate] = useState<Date>(new Date());
     const [endDate, setEndDate] = useState<Date>(new Date());
     const [competitorsCount, setCompetitorsCount] = useState<number>(0);
     const [showCompetitorsList, setShowCompetitorsList] = useState<boolean>(false);
+    const {formVisible} = useSelector((state: RootState) => state.chart);
+
+    const dispatch = useDispatch();
     const { register, handleSubmit } = useForm();
     
     const competitorsArray = [
@@ -59,6 +62,18 @@ const GraphForm = () => {
 
     registerLocale("fr-FR", fr);
 
+    const updateChart = (data: any) => {
+        dispatch(updateChartData(data));
+    }
+
+    const setChartVisibility = (data: boolean) => {
+        dispatch(updateChartVisibility(data));
+    }
+
+    const setFormVisibility = (data: boolean) => {
+        dispatch(updateFormVisibility(data));
+    }
+
     const handleCompetitorsNumber = ():string => {
         return competitorsCount > 1 ? 
             competitorsCount + " concurrents choisis"
@@ -66,33 +81,19 @@ const GraphForm = () => {
     }
 
     const handleListShow = () => {
+        setChartVisibility(false);
         setShowCompetitorsList(!showCompetitorsList);
     }
 
-    const flattenObject = (obj: any) => {
-        var toReturn:any = {};
-    
-        for (var i in obj) {
-            if (!obj.hasOwnProperty(i)) continue;
-    
-            if ((typeof obj[i]) == 'object' && obj[i] !== null) {
-                var flatObject:any = flattenObject(obj[i]);
-                for (var x in flatObject) {
-                    if (!flatObject.hasOwnProperty(x)) continue;
-
-                    toReturn[i + '.' + x] = flatObject[x];
-                }
-            } else {
-                toReturn[i] = obj[i];
-            }
-        }
-        return toReturn;
-    }
+    useEffect(() => {
+        
+    }, [formVisible])
 
     const onSubmit = (data: any) => {
         const flattened = flattenObject(data);
-        const formatedStartDate = moment(startDate).format("DD/MM/YYYY");
-        const formatedEndDate = moment(endDate).format("DD/MM/YYYY");
+        const formatedStartDate = moment(startDate).format('YYYY-M-D');
+        const formatedEndDate = moment(endDate).format('YYYY-M-D');
+
         let formData: any = {};
         (Object.entries(flattened)).map((val:any, key: number) => {
             if (val[1])
@@ -103,14 +104,19 @@ const GraphForm = () => {
             competitors: formData,
             date: [formatedStartDate, formatedEndDate]
         })
-            .then((res) => console.log(res.data))
+            .then((res) => {
+                updateChart(res.data);
+            })
             .catch(error => {
                 console.log(error);
             })
+        setFormVisibility(false);
+        setShowCompetitorsList(false);
+        setChartVisibility(true);
     }
 
     return (
-        <FormContainer>
+        <FormContainer style={{ display: formVisible ? "flex" : "none"}}>
             <FormContent>
             <DatePickerContainer>
                 <DatePickerInput>
@@ -192,7 +198,6 @@ const GraphForm = () => {
 }
 
 const FormContainer = styled.section`
-    display: flex;
     flex-direction: column;
     align-items: center;
     height: auto;
