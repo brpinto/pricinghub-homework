@@ -36,7 +36,7 @@ export const createDataSet = (data: any): object => {
         let temp = Object.keys(dataSet).map((val: any) => {
             if (dataSet[val]['competitor'] == label)
                 return dataSet[val]['price'];
-        });
+        }).filter((value: string) => value != undefined);
         pricesArray.push(temp);
         temp = [];
     })

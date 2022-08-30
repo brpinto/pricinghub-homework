@@ -15,6 +15,7 @@ const ChartComponent = (props: any) => {
 
     useEffect(() => {
         setNewChartData(createDataSet(chartData));
+        console.log(newChartData);
     }, [chartData, chartVisible])
 
     const canvasCallback = (canvas: HTMLCanvasElement | null) => {

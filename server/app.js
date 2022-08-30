@@ -34,7 +34,6 @@ app.post('/chart', async (req, res) => {
     res.send({
       labels: competitors,
       dataSet: filtered,
-      rangeDates: date
     })
   })
 })
